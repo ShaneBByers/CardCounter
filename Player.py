@@ -4,8 +4,15 @@ from enum import Enum
 class PlayerStatus(Enum):
     Active = 0
     Blackjack = 1
-    Stand = 2
-    Bust = 3
+    Stand = 3
+    Bust = 4
+    
+class PlayerResult(Enum):
+    StillActive = -999
+    Blackjack = 1.5
+    Win = 1
+    Lose = -1
+    Tie = 0
 
 
 class Player:
@@ -14,6 +21,8 @@ class Player:
         self.position = init_position
         self.hand = []
         self.status = PlayerStatus.Active
+        self.result = PlayerResult.StillActive
+        self.money = 0
 
     def update_status(self, dealer):
         player_hand_values = self.get_hand_values()
@@ -46,19 +55,19 @@ class Player:
         self.hand.append(card)
         hand_values = self.get_hand_values()
         if hand_values[0] == 21:
-            self.status = PlayerStatus.Blackjack
+            if len(self.hand) == 2:
+                self.status = PlayerStatus.Blackjack
         elif hand_values[0] > 21:
             self.status = PlayerStatus.Bust
 
     def get_hand_values(self):
         possible_values = [0]
         for card in self.hand:
-            if card.is_shown:
-                new_possible_values = []
-                for possible_value in possible_values:
-                    for card_value in card.get_values():
-                        new_possible_values.append(possible_value + card_value)
-                possible_values = new_possible_values.copy()
+            new_possible_values = []
+            for possible_value in possible_values:
+                for card_value in card.get_values():
+                    new_possible_values.append(possible_value + card_value)
+            possible_values = new_possible_values.copy()
 
         return_values = []
         for possible_value in possible_values:
@@ -69,12 +78,18 @@ class Player:
                 return_values.append(possible_value)
 
         return return_values
+    
+    def pay_result(self):
+        if self.result == PlayerResult.StillActive:
+            raise Exception()
+        else:
+            self.money += self.result.value
 
     def __str__(self):
         if self.is_dealer:
             player_str = "DEALER: "
         else:
-            player_str = "PLAYER " + str(self.position) + ": "
+            player_str = "PLAYER " + str(self.position) + " ($" + str(self.money) + "): "
 
         hand_values = self.get_hand_values()
 
@@ -89,6 +104,13 @@ class Player:
                 player_str += str(hand_values[i])
                 if i < len(hand_values) - 1:
                     player_str += " or "
+        
+        if self.result == PlayerResult.Win:
+            player_str += " - WIN"
+        elif self.result == PlayerResult.Lose:
+            player_str += " - LOSE"
+        elif self.result == PlayerResult.Tie:
+            player_str += " - TIE"
 
         player_str += "\n"
 

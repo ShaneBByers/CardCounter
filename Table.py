@@ -1,6 +1,7 @@
+from enum import Enum
+
 from Player import *
 from Shoe import Shoe
-
 
 class Table:
     def __init__(self, init_number_of_players, init_number_of_decks):
@@ -12,23 +13,30 @@ class Table:
         self.shoe = Shoe(init_number_of_decks)
 
     def play_hand(self):
-        self.start_deal()
-        self.continue_deal()
+        should_continue = self.start_deal()
+        if should_continue:
+            self.continue_deal()
+        else:
+            for player in self.players:
+                if player.status != PlayerStatus.Blackjack:
+                    player.status = PlayerStatus.Stand
         self.end_deal()
 
     def start_deal(self):
+        for player in self.players:
+            self.add_card_to_player(player)
+        
         self.add_card_to_player(self.dealer, False)
 
         for player in self.players:
             self.add_card_to_player(player)
-
+        
         self.add_card_to_player(self.dealer)
-
-        for player in self.players:
-            self.add_card_to_player(player)
 
         print("END OF START:")
         print(self)
+        
+        return self.dealer.status != PlayerStatus.Blackjack
 
     def continue_deal(self):
         while self.has_any_active():
@@ -42,8 +50,6 @@ class Table:
         print(self)
 
     def end_deal(self):
-        self.dealer.status = PlayerStatus.Active
-
         for card in self.dealer.hand:
             card.is_shown = True
 
@@ -51,6 +57,30 @@ class Table:
             self.dealer.update_status(self.dealer)
             if self.dealer.status == PlayerStatus.Active:
                 self.add_card_to_player(self.dealer)
+        
+        for player in self.players:
+            if player.status == PlayerStatus.Blackjack:
+                if self.dealer.status == PlayerStatus.Blackjack:
+                    player.result = PlayerResult.Tie
+                else:
+                    player.result = PlayerResult.Blackjack
+            elif player.status == PlayerStatus.Stand:
+                if self.dealer.status == PlayerStatus.Blackjack:
+                    player.result = PlayerResult.Lose
+                elif self.dealer.status == PlayerStatus.Stand:
+                    player_value = player.get_hand_values()[0]
+                    dealer_value = self.dealer.get_hand_values()[0]
+                    if player_value > dealer_value:
+                        player.result = PlayerResult.Win
+                    elif player_value < dealer_value:
+                        player.result = PlayerResult.Lose
+                    else:
+                        player.result = PlayerResult.Tie
+                elif self.dealer.status == PlayerStatus.Bust:
+                    player.result = PlayerResult.Win
+            elif player.status == PlayerStatus.Bust:
+                player.result = PlayerResult.Lose
+            player.pay_result()
 
         print("END OF END:")
         print(self)
