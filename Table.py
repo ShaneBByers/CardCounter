@@ -4,13 +4,14 @@ from Player import *
 from Shoe import Shoe
 
 class Table:
-    def __init__(self, init_number_of_players, init_number_of_decks):
+    def __init__(self, init_number_of_players, init_number_of_decks, verbose):
         self.dealer = Player(True, 0)
         self.players = []
         for i in range(init_number_of_players):
             player = Player(False, i + 1)
             self.players.append(player)
         self.shoe = Shoe(init_number_of_decks)
+        self.verbose = verbose
 
     def play_hand(self):
         should_continue = self.start_deal()
@@ -33,8 +34,9 @@ class Table:
         
         self.add_card_to_player(self.dealer)
 
-        print("END OF START:")
-        print(self)
+        if self.verbose:
+            print("END OF START:")
+            print(self)
         
         return self.dealer.status != PlayerStatus.Blackjack
 
@@ -46,8 +48,9 @@ class Table:
                     if player.status == PlayerStatus.Active:
                         self.add_card_to_player(player)
 
-        print("END OF CONTINUE:")
-        print(self)
+        if self.verbose:
+            print("END OF CONTINUE:")
+            print(self)
 
     def end_deal(self):
         for card in self.dealer.hand:
@@ -82,8 +85,16 @@ class Table:
                 player.result = PlayerResult.Lose
             player.pay_result()
 
-        print("END OF END:")
+        if self.verbose:
+            print("END OF END:")
         print(self)
+        
+        self.shoe.end_deal()
+        
+        self.dealer.end_deal()
+        
+        for player in self.players:
+            player.end_deal()
 
     def has_any_active(self):
         for player in self.players:

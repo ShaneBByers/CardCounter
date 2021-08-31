@@ -1,5 +1,5 @@
 from Table import Table
 
-while(True):
-    table = Table(5, 1)
+table = Table(5, 6, False)
+for _ in range(1000):
     table.play_hand()

@@ -84,6 +84,11 @@ class Player:
             raise Exception()
         else:
             self.money += self.result.value
+            
+    def end_deal(self):
+        self.hand = []
+        self.status = PlayerStatus.Active
+        self.result = PlayerResult.StillActive
 
     def __str__(self):
         if self.is_dealer:
