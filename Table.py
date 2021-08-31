@@ -1,6 +1,7 @@
 from enum import Enum
 
 from Player import *
+from Hand import *
 from Shoe import Shoe
 
 class Table:
@@ -14,13 +15,8 @@ class Table:
         self.verbose = verbose
 
     def play_hand(self):
-        should_continue = self.start_deal()
-        if should_continue:
-            self.continue_deal()
-        else:
-            for player in self.players:
-                if player.status != PlayerStatus.Blackjack:
-                    player.status = PlayerStatus.Stand
+        self.start_deal()
+        self.continue_deal()
         self.end_deal()
 
     def start_deal(self):
@@ -37,53 +33,29 @@ class Table:
         if self.verbose:
             print("END OF START:")
             print(self)
-        
-        return self.dealer.status != PlayerStatus.Blackjack
 
     def continue_deal(self):
         while self.has_any_active():
             for player in self.players:
-                if player.status == PlayerStatus.Active:
-                    player.update_status(self.dealer)
-                    if player.status == PlayerStatus.Active:
+                if player.get_is_splitting():
+                    while player.get_is_splitting():
                         self.add_card_to_player(player)
+                elif player.hands[0].status == HandStatus.Active:
+                    self.add_card_to_player(player)
 
         if self.verbose:
             print("END OF CONTINUE:")
             print(self)
 
     def end_deal(self):
-        for card in self.dealer.hand:
+        for card in self.dealer.hands:
             card.is_shown = True
 
-        while self.dealer.status == PlayerStatus.Active:
-            self.dealer.update_status(self.dealer)
-            if self.dealer.status == PlayerStatus.Active:
-                self.add_card_to_player(self.dealer)
+        while self.dealer.hands[0].status == HandStatus.Active:
+            self.add_card_to_player(self.dealer)
         
         for player in self.players:
-            if player.status == PlayerStatus.Blackjack:
-                if self.dealer.status == PlayerStatus.Blackjack:
-                    player.result = PlayerResult.Tie
-                else:
-                    player.result = PlayerResult.Blackjack
-            elif player.status == PlayerStatus.Stand:
-                if self.dealer.status == PlayerStatus.Blackjack:
-                    player.result = PlayerResult.Lose
-                elif self.dealer.status == PlayerStatus.Stand:
-                    player_value = player.get_hand_values()[0]
-                    dealer_value = self.dealer.get_hand_values()[0]
-                    if player_value > dealer_value:
-                        player.result = PlayerResult.Win
-                    elif player_value < dealer_value:
-                        player.result = PlayerResult.Lose
-                    else:
-                        player.result = PlayerResult.Tie
-                elif self.dealer.status == PlayerStatus.Bust:
-                    player.result = PlayerResult.Win
-            elif player.status == PlayerStatus.Bust:
-                player.result = PlayerResult.Lose
-            player.pay_result()
+            player.pay_results(self.dealer.hands[0])
 
         if self.verbose:
             print("END OF END:")
@@ -98,13 +70,14 @@ class Table:
 
     def has_any_active(self):
         for player in self.players:
-            if player.status is PlayerStatus.Active:
-                return True
+            for hand in player.hands:
+                if hand.status == HandStatus.Active:
+                    return True
         return False
 
     def add_card_to_player(self, player, is_shown=True):
         card = self.shoe.next_card(is_shown)
-        player.add_card(card)
+        player.add_card(card, self.dealer.hands[0])
 
     def __str__(self):
         table_str = "--- TABLE ---\n\n"
