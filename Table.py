@@ -37,10 +37,9 @@ class Table:
     def continue_deal(self):
         while self.has_any_active():
             for player in self.players:
-                if player.get_is_splitting():
-                    while player.get_is_splitting():
-                        self.add_card_to_player(player)
-                elif player.hands[0].status == HandStatus.Active:
+                while player.get_is_splitting():
+                    self.add_card_to_player(player)
+                if player.hands[0].status == HandStatus.Active:
                     self.add_card_to_player(player)
 
         if self.verbose:
@@ -48,8 +47,9 @@ class Table:
             print(self)
 
     def end_deal(self):
-        for card in self.dealer.hands:
-            card.is_shown = True
+        for hand in self.dealer.hands:
+            for card in hand.cards:
+                card.is_shown = True
 
         while self.dealer.hands[0].status == HandStatus.Active:
             self.add_card_to_player(self.dealer)
@@ -78,6 +78,10 @@ class Table:
     def add_card_to_player(self, player, is_shown=True):
         card = self.shoe.next_card(is_shown)
         player.add_card(card, self.dealer.hands[0])
+        
+        if self.verbose:
+            print("MIDDLE OF CONTINUE:")
+            print(self)
 
     def __str__(self):
         table_str = "--- TABLE ---\n\n"

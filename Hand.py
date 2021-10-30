@@ -14,18 +14,24 @@ class HandResult(Enum):
     Tie = 0
 
 class Hand:
-    def __init__(self, init_bet, init_is_dealer_hand):
+    def __init__(self, init_bet, init_is_dealer_hand, init_is_splitting):
         self.is_dealer_hand = init_is_dealer_hand
         self.status = HandStatus.Active
         self.result = HandResult.StillActive
         self.bet = init_bet
         self.cards = []
-        self.is_splitting = False
+        self.needs_split = False
+        self.is_splitting = init_is_splitting
     
     def add_card(self, card, dealer_hand):
         self.cards.append(card)
         self.status = self.get_status(dealer_hand)
-        self.is_splitting = self.get_is_splitting(dealer_hand.get_hand_values(False))
+        new_is_splitting = self.get_is_splitting(dealer_hand.get_hand_values(False))
+        if not self.is_splitting and new_is_splitting:
+            self.needs_split = True
+        elif self.is_splitting and self.needs_split:
+            self.needs_split = False
+        self.is_splitting = new_is_splitting
             
     def get_status(self, dealer_hand):
         hand_values = self.get_hand_values(True)
@@ -74,7 +80,7 @@ class Hand:
         for possible_value in possible_values:
             if possible_value == 21 or (possible_value > 21 and len(return_values) == 0):
                 return [possible_value]
-            elif possible_value not in return_values:
+            elif possible_value not in return_values and possible_value < 21:
                 return_values.append(possible_value)
 
         return sorted(return_values)
@@ -82,6 +88,8 @@ class Hand:
     def get_is_splitting(self, dealer_hand_values):
         if self.is_dealer_hand:
             return False
+        elif self.status == HandStatus.Active and self.is_splitting:
+            return True
         elif len(self.cards) == 2:
             first_value = self.cards[0].get_values()[-1]
             second_value = self.cards[1].get_values()[-1]
@@ -101,8 +109,6 @@ class Hand:
                 elif first_value == 4:
                     if 5 <= dealer_value <= 6:
                         return True
-        elif self.status == HandStatus.Active and self.is_splitting:
-            return True
         return False
     
     def get_pay_result(self, dealer_hand):
@@ -133,7 +139,7 @@ class Hand:
             return HandResult.Lose
     
     def __str__(self):
-        hand_str = ""
+        hand_str = "\n"
         for card in self.cards:
             hand_str += str(card) + " "
         

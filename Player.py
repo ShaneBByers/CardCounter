@@ -1,21 +1,32 @@
-from Hand import Hand
+from Hand import *
 
 class Player:
     def __init__(self, init_is_dealer, init_position):
         self.is_dealer = init_is_dealer
         self.position = init_position
-        self.hands = [Hand(1, self.is_dealer)]
+        self.hands = [Hand(1, self.is_dealer, False)]
         self.money = 0
 
     def add_card(self, card, dealer_hand):
-        self.hands[0].add_card(card, dealer_hand)
+        for hand in self.hands:
+            if hand.needs_split:
+                self.hands.append(Hand(1, self.is_dealer, True))
+                copy_card = hand.cards[1]
+                hand.cards = [hand.cards[0]]
+                hand.needs_split = False
+                self.hands[-1].cards = [copy_card]
+                break
+        for hand in self.hands:
+            if hand.is_splitting or hand.status == HandStatus.Active:
+                hand.add_card(card, dealer_hand)
+                return
     
     def pay_results(self, dealer_hand):
         for hand in self.hands:
             self.money += hand.get_pay_result(dealer_hand)
             
     def end_deal(self):
-        self.hands = [Hand(1, self.is_dealer)]
+        self.hands = [Hand(1, self.is_dealer, False)]
         
     def get_is_splitting(self):
         for hand in self.hands:
@@ -28,8 +39,6 @@ class Player:
             player_str = "DEALER: "
         else:
             player_str = "PLAYER " + str(self.position) + " - $" + str(self.money) + ": "
-        
-        player_str += "\n";
             
         for hand in self.hands:
             player_str += str(hand)
