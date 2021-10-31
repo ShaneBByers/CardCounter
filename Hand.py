@@ -1,11 +1,13 @@
 from enum import Enum
 
+
 class HandStatus(Enum):
     Active = 0
     Blackjack = 1
     Stand = 3
     Bust = 4
-    
+
+
 class HandResult(Enum):
     StillActive = -99999
     Blackjack = 1.5
@@ -13,31 +15,31 @@ class HandResult(Enum):
     Lose = -1
     Tie = 0
 
+
 class Hand:
-    def __init__(self, init_bet, init_is_dealer_hand, init_is_splitting):
+    def __init__(self, init_bet, init_is_dealer_hand, init_is_continuous_deal):
+        self.bet = init_bet
         self.is_dealer_hand = init_is_dealer_hand
+        self.is_continuous_deal = init_is_continuous_deal
         self.status = HandStatus.Active
         self.result = HandResult.StillActive
-        self.bet = init_bet
-        self.cards = []
         self.needs_split = False
-        self.is_splitting = init_is_splitting
+        self.cards = []
     
     def add_card(self, card, dealer_hand):
         self.cards.append(card)
         self.status = self.get_status(dealer_hand)
-        new_is_splitting = self.get_is_splitting(dealer_hand.get_hand_values(False))
-        if not self.is_splitting and new_is_splitting:
-            self.needs_split = True
-        elif self.is_splitting and self.needs_split:
-            self.needs_split = False
-        self.is_splitting = new_is_splitting
-            
+        self.needs_split = self.get_needs_split(dealer_hand.get_hand_values(False))
+        if self.needs_split:
+            self.is_continuous_deal = True
+        elif self.status != HandStatus.Active:
+            self.is_continuous_deal = False
+
     def get_status(self, dealer_hand):
         hand_values = self.get_hand_values(True)
-        if hand_values[0] == 21 and len(self.cards) == 2 and not self.is_splitting:
+        if hand_values[0] == 21 and len(self.cards) == 2 and not self.is_continuous_deal:
             return HandStatus.Blackjack
-        elif self.is_splitting and len(self.cards) == 2 and self.cards[0].get_values()[-1] == 11:
+        elif self.is_continuous_deal and len(self.cards) == 2 and self.cards[0].get_values()[-1] == 11:
             return HandStatus.Stand
         elif hand_values[0] > 21:
             return HandStatus.Bust
@@ -85,11 +87,9 @@ class Hand:
 
         return sorted(return_values)
     
-    def get_is_splitting(self, dealer_hand_values):
+    def get_needs_split(self, dealer_hand_values):
         if self.is_dealer_hand:
             return False
-        elif self.status == HandStatus.Active and self.is_splitting:
-            return True
         elif len(self.cards) == 2:
             first_value = self.cards[0].get_values()[-1]
             second_value = self.cards[1].get_values()[-1]

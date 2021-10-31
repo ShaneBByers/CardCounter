@@ -9,16 +9,14 @@ class Player:
 
     def add_card(self, card, dealer_hand):
         for hand in self.hands:
-            if hand.needs_split:
-                self.hands.append(Hand(1, self.is_dealer, True))
-                copy_card = hand.cards[1]
-                hand.cards = [hand.cards[0]]
-                hand.needs_split = False
-                self.hands[-1].cards = [copy_card]
-                break
-        for hand in self.hands:
-            if hand.is_splitting or hand.status == HandStatus.Active:
+            if hand.is_continuous_deal or hand.status == HandStatus.Active:
                 hand.add_card(card, dealer_hand)
+                if hand.needs_split:
+                    self.hands.append(Hand(1, self.is_dealer, True))
+                    copy_card = hand.cards[1]
+                    hand.cards = [hand.cards[0]]
+                    hand.needs_split = False
+                    self.hands[-1].cards = [copy_card]
                 return
     
     def pay_results(self, dealer_hand):
@@ -28,9 +26,9 @@ class Player:
     def end_deal(self):
         self.hands = [Hand(1, self.is_dealer, False)]
         
-    def get_is_splitting(self):
+    def get_is_continuous_deal(self):
         for hand in self.hands:
-            if hand.is_splitting:
+            if hand.is_continuous_deal:
                 return True
         return False
 

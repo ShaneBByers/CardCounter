@@ -37,7 +37,7 @@ class Table:
     def continue_deal(self):
         while self.has_any_active():
             for player in self.players:
-                while player.get_is_splitting():
+                while player.get_is_continuous_deal():
                     self.add_card_to_player(player)
                 if player.hands[0].status == HandStatus.Active:
                     self.add_card_to_player(player)
