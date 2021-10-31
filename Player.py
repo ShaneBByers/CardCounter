@@ -17,6 +17,8 @@ class Player:
                     hand.cards = [hand.cards[0]]
                     hand.needs_split = False
                     self.hands[-1].cards = [copy_card]
+                elif hand.double_down:
+                    hand.bet *= 2
                 return
     
     def pay_results(self, dealer_hand):

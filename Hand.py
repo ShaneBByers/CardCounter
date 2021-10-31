@@ -23,7 +23,9 @@ class Hand:
         self.is_continuous_deal = init_is_continuous_deal
         self.status = HandStatus.Active
         self.result = HandResult.StillActive
+        self.pay_result = 0
         self.needs_split = False
+        self.double_down = False
         self.cards = []
     
     def add_card(self, card, dealer_hand):
@@ -32,14 +34,22 @@ class Hand:
         self.needs_split = self.get_needs_split(dealer_hand.get_hand_values(False))
         if self.needs_split:
             self.is_continuous_deal = True
-        elif self.status != HandStatus.Active:
-            self.is_continuous_deal = False
+        else:
+            if self.is_continuous_deal and self.status != HandStatus.Active:
+                self.is_continuous_deal = False
+                self.double_down = False
+            elif not self.double_down and self.status == HandStatus.Active:
+                self.double_down = self.get_double_down(dealer_hand.get_hand_values(False))
+            elif self.double_down:
+                self.double_down = False
 
     def get_status(self, dealer_hand):
         hand_values = self.get_hand_values(True)
         if hand_values[0] == 21 and len(self.cards) == 2 and not self.is_continuous_deal:
             return HandStatus.Blackjack
         elif self.is_continuous_deal and len(self.cards) == 2 and self.cards[0].get_values()[-1] == 11:
+            return HandStatus.Stand
+        elif self.double_down and len(self.cards) == 3:
             return HandStatus.Stand
         elif hand_values[0] > 21:
             return HandStatus.Bust
@@ -110,10 +120,38 @@ class Hand:
                     if 5 <= dealer_value <= 6:
                         return True
         return False
+
+    def get_double_down(self, dealer_hand_values):
+        if self.is_dealer_hand:
+            return False
+        elif (len(self.cards) == 1 and self.is_continuous_deal) or len(self.cards) == 2:
+            total_value = 0
+            for card in self.cards:
+                total_value += card.get_values()[-1]
+            if total_value == 11:
+                return True
+            dealer_value = dealer_hand_values[-1]
+            if total_value == 10 and dealer_value <= 9:
+                return True
+            if total_value == 9 and 3 <= dealer_value <= 6:
+                return True
+            if len(self.cards) == 2 and dealer_value <= 6:
+                first_value = self.cards[0].get_values()[-1]
+                second_value = self.cards[1].get_values()[-1]
+                min_value = min(first_value, second_value)
+                max_value = max(first_value, second_value)
+                if dealer_value >= 3 and min_value == 6 and max_value == 11:
+                    return True
+                if dealer_value >= 4 and 4 <= min_value <= 5 and max_value == 11:
+                    return True
+                if dealer_value >= 5 and 2 <= min_value <= 3 and max_value == 11:
+                    return True
+        return False
     
     def get_pay_result(self, dealer_hand):
         self.result = self.get_result(dealer_hand)
-        return self.bet * self.result.value
+        self.pay_result = self.bet * self.result.value
+        return self.pay_result
         
     def get_result(self, dealer_hand):
         if self.status == HandStatus.Blackjack:
@@ -148,6 +186,8 @@ class Hand:
         hand_values = self.get_hand_values(self.result != HandResult.StillActive)
         if self.status == HandStatus.Blackjack:
             hand_str += str(hand_values[0]) + " - BLACKJACK"
+            if not self.is_dealer_hand:
+                hand_str += " (+$" + str(self.pay_result) + ")"
         elif self.status == HandStatus.Bust:
             hand_str += str(hand_values[0]) + " - BUST"
         elif self.status == HandStatus.Stand:
@@ -159,10 +199,10 @@ class Hand:
                     hand_str += " or "
         
         if self.result == HandResult.Win:
-            hand_str += " - WIN"
+            hand_str += " - WIN (+$" + str(self.pay_result) + ")"
         elif self.result == HandResult.Lose:
-            hand_str += " - LOSE"
+            hand_str += " - LOSE (-$" + str(abs(self.pay_result)) + ")"
         elif self.result == HandResult.Tie:
-            hand_str += " - TIE"
+            hand_str += " - TIE (+$" + str(self.pay_result) + ")"
         
         return hand_str
