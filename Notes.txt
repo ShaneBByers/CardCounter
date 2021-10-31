@@ -1,0 +1,4 @@
+Create two separate random number generators. One for "shoe card" and one for "player choice".
+Fix each different hand style one at a time.
+Add the player style to the __str__ method in Player.py.
+Update the __str__ method in Game.py to give overall results of the game. (For when verbose is False.)
