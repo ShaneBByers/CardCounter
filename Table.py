@@ -1,15 +1,14 @@
-from enum import Enum
-
-from Player import *
-from Hand import *
+from Player import Player
 from Shoe import Shoe
+from Enums import *
+
 
 class Table:
-    def __init__(self, init_number_of_players, init_number_of_decks, verbose):
-        self.dealer = Player(True, 0)
+    def __init__(self, player_styles, init_number_of_decks, verbose):
+        self.dealer = Player(PlayerStyle.Dealer, 0)
         self.players = []
-        for i in range(init_number_of_players):
-            player = Player(False, i + 1)
+        for i in range(len(player_styles)):
+            player = Player(player_styles[i], i + 1)
             self.players.append(player)
         self.shoe = Shoe(init_number_of_decks)
         self.verbose = verbose
