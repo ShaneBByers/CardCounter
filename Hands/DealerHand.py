@@ -6,6 +6,8 @@ class DealerHand(HandBase):
 
     def get_status(self, dealer_hand):
         hand_values = self.get_hand_values(True)
+        if hand_values[0] > 21:
+            return HandStatus.Bust
         for hand_value in hand_values:
             if 17 <= hand_value <= 21:
                 return HandStatus.Stand

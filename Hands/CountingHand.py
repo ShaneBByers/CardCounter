@@ -58,7 +58,7 @@ class CountingHand(HandBase):
         return False
 
     def get_double_down(self, dealer_hand_values):
-        if (len(self.cards) == 1 and self.is_continuous_deal) or len(self.cards) == 2:
+        if len(self.cards) == 2:
             total_value = 0
             for card in self.cards:
                 total_value += card.get_values()[-1]

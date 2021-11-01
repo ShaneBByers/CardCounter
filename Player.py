@@ -15,15 +15,18 @@ class Player:
 
     def add_card(self, card, dealer_hand):
         for hand in self.hands:
+            if hand.get_needs_split(dealer_hand.get_hand_values(False)):
+                copy_card = hand.cards[1]
+                hand.cards = [hand.cards[0]]
+                hand.is_continuous_deal = True
+                self.hands.append(self.get_new_hand(True, [copy_card]))
+            elif hand.get_double_down(dealer_hand.get_hand_values(False)):
+                hand.bet *= 2
+                hand.double_down = True
+
+        for hand in self.hands:
             if hand.is_continuous_deal or hand.status == HandStatus.Active:
                 hand.add_card(card, dealer_hand)
-                if hand.needs_split:
-                    copy_card = hand.cards[1]
-                    hand.cards = [hand.cards[0]]
-                    hand.needs_split = False
-                    self.hands.append(self.get_new_hand(True, [copy_card]))
-                elif hand.double_down:
-                    hand.bet *= 2
                 return
     
     def pay_results(self, dealer_hand):
@@ -59,7 +62,15 @@ class Player:
         if self.player_style == PlayerStyle.Dealer:
             player_str = "DEALER: "
         else:
-            player_str = "PLAYER " + str(self.position) + " - $" + str(self.money) + ": "
+            sign = "+" if self.money >= 0 else "-"
+            player_str = "PLAYER " + \
+                         str(self.position) + \
+                         " - " + \
+                         str(self.player_style.name) + \
+                         " - (" + \
+                         sign + \
+                         "${:,.2f}".format(abs(self.money)) + \
+                         "): "
             
         for hand in self.hands:
             player_str += str(hand)

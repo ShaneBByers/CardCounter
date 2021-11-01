@@ -10,7 +10,6 @@ class HandBase(metaclass=abc.ABCMeta):
         else:
             self.cards = init_cards
         self.bet = init_bet
-        self.needs_split = False
         self.double_down = False
         self.status = HandStatus.Active
         self.result = HandResult.StillActive
@@ -19,17 +18,8 @@ class HandBase(metaclass=abc.ABCMeta):
     def add_card(self, card, dealer_hand):
         self.cards.append(card)
         self.status = self.get_status(dealer_hand)
-        self.needs_split = self.get_needs_split(dealer_hand.get_hand_values(False))
-        if self.needs_split:
-            self.is_continuous_deal = True
-        else:
-            if self.is_continuous_deal and self.status != HandStatus.Active:
-                self.is_continuous_deal = False
-                self.double_down = False
-            elif not self.double_down and self.status == HandStatus.Active:
-                self.double_down = self.get_double_down(dealer_hand.get_hand_values(False))
-            elif self.double_down:
-                self.double_down = False
+        if self.is_continuous_deal and self.status != HandStatus.Active:
+            self.is_continuous_deal = False
 
     @abc.abstractmethod
     def get_status(self, dealer_hand):
@@ -63,6 +53,8 @@ class HandBase(metaclass=abc.ABCMeta):
         return sorted(return_values)
 
     def get_result(self, dealer_hand):
+        if self.status == HandStatus.Active:
+            raise Exception("UH OH.")
         if self.status == HandStatus.Blackjack:
             if dealer_hand.status == HandStatus.Blackjack:
                 return HandResult.Tie

@@ -2,3 +2,19 @@ Create two separate random number generators. One for "shoe card" and one for "p
 Fix each different hand style one at a time.
 Add the player style to the __str__ method in Player.py.
 Update the __str__ method in Game.py to give overall results of the game. (For when verbose is False.)
+
+
+DEALER:
+4S 5H QD - 19 - STAND
+
+PLAYER 1 - $-1:
+AH - 11 - STAND - LOSE (-$1)
+
+PLAYER 2 - $-1:
+6H 9H - 15 - STAND - LOSE (-$1)
+
+PLAYER 3 - $-1:
+4H - 4 - STAND - LOSE (-$1)
+
+PLAYER 4 - $-1:
+2H - 2 - STAND - LOSE (-$1)

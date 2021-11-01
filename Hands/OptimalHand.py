@@ -58,7 +58,7 @@ class OptimalHand(HandBase):
         return False
 
     def get_double_down(self, dealer_hand_values):
-        if (len(self.cards) == 1 and self.is_continuous_deal) or len(self.cards) == 2:
+        if len(self.cards) == 2:
             total_value = 0
             for card in self.cards:
                 total_value += card.get_values()[-1]
@@ -69,15 +69,20 @@ class OptimalHand(HandBase):
                 return True
             if total_value == 9 and 3 <= dealer_value <= 6:
                 return True
-            if len(self.cards) == 2 and dealer_value <= 6:
+            if dealer_value <= 6:
                 first_value = self.cards[0].get_values()[-1]
                 second_value = self.cards[1].get_values()[-1]
-                min_value = min(first_value, second_value)
                 max_value = max(first_value, second_value)
-                if dealer_value >= 3 and min_value == 6 and max_value == 11:
-                    return True
-                if dealer_value >= 4 and 4 <= min_value <= 5 and max_value == 11:
-                    return True
-                if dealer_value >= 5 and 2 <= min_value <= 3 and max_value == 11:
-                    return True
+                if max_value == 11:
+                    min_value = min(first_value, second_value)
+                    if dealer_value == 6 and min_value == 8:
+                        return True
+                    if dealer_value >= 2 and min_value == 7:
+                        return True
+                    if dealer_value >= 3 and min_value == 6:
+                        return True
+                    if dealer_value >= 4 and 4 <= min_value <= 5:
+                        return True
+                    if dealer_value >= 5 and 2 <= min_value <= 3:
+                        return True
         return False
