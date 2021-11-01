@@ -23,7 +23,16 @@ class HandBase(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_status(self, dealer_hand):
-        return
+        hand_values = self.get_hand_values(True)
+        if hand_values[0] > 21:
+            return HandStatus.Bust
+        elif hand_values[0] == 21 and len(self.cards) == 2 and not self.is_continuous_deal:
+            return HandStatus.Blackjack
+        elif self.is_continuous_deal and len(self.cards) == 2 and self.cards[0].get_values()[-1] == 11:
+            return HandStatus.Stand
+        elif self.double_down and len(self.cards) == 3:
+            return HandStatus.Stand
+        return None
 
     @abc.abstractmethod
     def get_needs_split(self, dealer_hand_values):

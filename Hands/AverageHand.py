@@ -5,16 +5,11 @@ from Enums import *
 class AverageHand(HandBase):
 
     def get_status(self, dealer_hand):
-        hand_values = self.get_hand_values(True)
-        if hand_values[0] == 21 and len(self.cards) == 2 and not self.is_continuous_deal:
-            return HandStatus.Blackjack
-        elif self.is_continuous_deal and len(self.cards) == 2 and self.cards[0].get_values()[-1] == 11:
-            return HandStatus.Stand
-        elif self.double_down and len(self.cards) == 3:
-            return HandStatus.Stand
-        elif hand_values[0] > 21:
-            return HandStatus.Bust
+        super_status = super().get_status(dealer_hand)
+        if super_status is not None:
+            return super_status
         else:
+            hand_values = self.get_hand_values(True)
             dealer_hand_values = dealer_hand.get_hand_values(False)
             if len(hand_values) > 1:
                 if max(dealer_hand_values) >= 9:

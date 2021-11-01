@@ -9,7 +9,7 @@ class HandStatus(Enum):
 
 
 class HandResult(Enum):
-    StillActive = -99999
+    StillActive = -99999999999999999999999999
     Blackjack = 1.5
     Win = 1
     Lose = -1
