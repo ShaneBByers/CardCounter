@@ -53,8 +53,8 @@ class OptimalHand(HandBase):
         return False
 
     def get_double_down(self, dealer_hand_values):
-        # if self.status != HandStatus.Active:
-        #     return False
+        if self.status != HandStatus.Active:
+            return False
         if len(self.cards) != 2:
             return False
         total_value = 0
