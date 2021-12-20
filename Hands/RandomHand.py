@@ -6,8 +6,8 @@ import sys
 
 class RandomHand(HandBase):
 
-    def __init__(self, init_is_from_split, init_cards=None, init_bet=1):
-        super().__init__(init_is_from_split, init_cards, init_bet)
+    def __init__(self, init_is_from_split, init_cards=None):
+        super().__init__(init_is_from_split, init_cards)
         self.player_choice_randomizer = random.Random()
         self.player_choice_randomizer.seed(random.randrange(sys.maxsize))
 
@@ -41,3 +41,9 @@ class RandomHand(HandBase):
             return False
 
         return self.player_choice_randomizer.choice([True, False])
+
+    def set_true_count(self, true_count):
+        return
+
+    def set_current_bet(self, true_count):
+        self.current_bet = self.player_choice_randomizer.randint(10, 100)

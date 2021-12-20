@@ -18,3 +18,9 @@ class DealerHand(HandBase):
 
     def get_double_down(self, dealer_hand_values):
         return False
+
+    def set_true_count(self, true_count):
+        return
+
+    def set_current_bet(self, true_count):
+        return

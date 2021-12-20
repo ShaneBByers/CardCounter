@@ -13,20 +13,21 @@ class Player:
         self.hands = [self.get_new_hand(False)]
         self.money = 0
 
-    def add_card(self, card, dealer_hand):
+    def add_card(self, card, dealer_hand, true_count):
         for hand in self.hands:
             if hand.get_needs_split(dealer_hand.get_hand_values(False)):
                 copy_card = hand.cards[1]
                 hand.cards = [hand.cards[0]]
                 hand.is_continuous_deal = True
                 self.hands.append(self.get_new_hand(True, [copy_card]))
+                self.hands[-1].set_true_count(true_count)
+                self.hands[-1].set_current_bet(self.hands[0].current_bet)
             elif hand.get_double_down(dealer_hand.get_hand_values(False)):
-                hand.bet *= 2
                 hand.double_down = True
 
         for hand in self.hands:
             if hand.is_continuous_deal or hand.status == HandStatus.Active:
-                hand.add_card(card, dealer_hand)
+                hand.add_card(card, dealer_hand, true_count)
                 return
     
     def pay_results(self, dealer_hand):
@@ -35,6 +36,9 @@ class Player:
             
     def end_deal(self):
         self.hands = [self.get_new_hand(False)]
+
+    def set_current_bet(self, true_count):
+        self.hands[0].set_current_bet(true_count)
         
     def get_is_continuous_deal(self):
         for hand in self.hands:

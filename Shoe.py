@@ -14,10 +14,12 @@ class Shoe:
         self.current_cards = []
         self.discarded_cards = []
         self.shuffle()
+        self.just_shuffled = False
         self.total_card_count = len(self.available_cards)
 
     def shuffle(self):
         random.shuffle(self.available_cards)
+        self.just_shuffled = True
 
     def next_card(self, is_shown):
         card = self.available_cards.pop()
@@ -32,6 +34,9 @@ class Shoe:
     def end_deal(self):
         self.discarded_cards.extend(self.current_cards)
         self.current_cards = []
+
+    def get_remaining_decks(self):
+        return int(float(len(self.available_cards)) / self.total_card_count) + 1
 
     def __str__(self):
         shoe_str = "SHOE CURRENT  : " + str(len(self.current_cards)) + "\n"

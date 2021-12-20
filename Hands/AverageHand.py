@@ -34,3 +34,9 @@ class AverageHand(HandBase):
             if total_value == 11:
                 return True
         return False
+
+    def set_true_count(self, true_count):
+        return
+
+    def set_current_bet(self, true_count):
+        self.current_bet = 20

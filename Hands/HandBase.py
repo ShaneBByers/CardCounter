@@ -3,20 +3,21 @@ from Enums import *
 
 
 class HandBase(metaclass=abc.ABCMeta):
-    def __init__(self, init_is_from_split, init_cards=None, init_bet=1):
+    def __init__(self, init_is_from_split, init_cards=None):
         self.is_continuous_deal = init_is_from_split
         if init_cards is None:
             self.cards = []
         else:
             self.cards = init_cards
-        self.bet = init_bet
         self.double_down = False
         self.status = HandStatus.Active
         self.result = HandResult.StillActive
         self.pay_result = 0
+        self.current_bet = None
     
-    def add_card(self, card, dealer_hand):
+    def add_card(self, card, dealer_hand, true_count):
         self.cards.append(card)
+        self.set_true_count(true_count)
         self.status = self.get_status(dealer_hand)
         if self.is_continuous_deal and self.status != HandStatus.Active:
             self.is_continuous_deal = False
@@ -40,6 +41,14 @@ class HandBase(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_double_down(self, dealer_hand_values):
+        return
+
+    @abc.abstractmethod
+    def set_true_count(self, true_count):
+        return
+
+    @abc.abstractmethod
+    def set_current_bet(self, true_count):
         return
 
     def get_hand_values(self, include_hidden_values):
@@ -88,7 +97,9 @@ class HandBase(metaclass=abc.ABCMeta):
     
     def get_pay_result(self, dealer_hand):
         self.result = self.get_result(dealer_hand)
-        self.pay_result = self.bet * self.result.value
+        self.pay_result = self.current_bet * self.result.value
+        if self.double_down:
+            self.pay_result *= 2
         return self.pay_result
     
     def __str__(self):
