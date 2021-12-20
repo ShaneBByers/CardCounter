@@ -4,14 +4,14 @@ from Enums import *
 
 
 class Table:
-    def __init__(self, player_styles, init_number_of_decks, verbose):
+    def __init__(self, player_styles, init_number_of_decks, logging_type):
         self.dealer = Player(PlayerStyle.Dealer, 0)
         self.players = []
         for i in range(len(player_styles)):
             player = Player(player_styles[i], i + 1)
             self.players.append(player)
         self.shoe = Shoe(init_number_of_decks)
-        self.verbose = verbose
+        self.logging_type = logging_type
         self.current_count = 0
 
     def play_hand(self):
@@ -33,7 +33,7 @@ class Table:
         
         self.add_card_to_player(self.dealer, False)
 
-        if self.verbose:
+        if self.logging_type == LoggingType.AllInfo:
             print("END OF START:")
             print(self)
 
@@ -45,7 +45,7 @@ class Table:
                 else:
                     self.add_card_to_player(player)
 
-        if self.verbose:
+        if self.logging_type == LoggingType.AllInfo:
             print("END OF CONTINUE:")
             print(self)
 
@@ -66,9 +66,10 @@ class Table:
         for player in self.players:
             player.pay_results(self.dealer.hands[0])
 
-        if self.verbose:
+        if self.logging_type == LoggingType.AllInfo:
             print("END OF END:")
-        print(self)
+        if self.logging_type == LoggingType.AllInfo or self.logging_type == LoggingType.OnlyEndOfHands:
+            print(self)
         
         self.shoe.end_deal()
         
@@ -97,7 +98,7 @@ class Table:
                 self.current_count += 1
         player.add_card(card, self.dealer.hands[0], self.get_true_count())
         
-        if self.verbose:
+        if self.logging_type == LoggingType.AllInfo:
             print("MIDDLE OF CONTINUE:")
             print(self)
 

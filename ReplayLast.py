@@ -1,6 +1,7 @@
 from Game import Game
+from Enums import LoggingType
 
-verbose = True
+logging_type = LoggingType.AllInfo
 
 game = Game("History.txt")
-game.replay_last(verbose)
+game.replay_last(logging_type)

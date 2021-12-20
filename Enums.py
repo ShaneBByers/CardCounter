@@ -22,3 +22,9 @@ class PlayerStyle(Enum):
     Average = 2
     Optimal = 3
     Counting = 4
+
+
+class LoggingType(Enum):
+    AllInfo = 0
+    OnlyEndOfHands = 1
+    OnlyEndOfGame = 2
